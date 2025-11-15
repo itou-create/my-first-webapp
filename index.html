@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
@@ -8,8 +8,36 @@
 </head>
 <body>
   <main class="app">
+    <button id="reset" class="reset-button" type="button" aria-label="ゲームをリセット">リセット</button>
     <h1 id="count">カウント: 0</h1>
-    <button id="increment">増やす</button>
+    <p id="target" class="target-display">爆発ライン: 0</p>
+    <p id="turn" class="turn-status">プレイヤー1の番 / 残り3回</p>
+    <p id="face" class="face-display" aria-live="polite" role="status">🙂</p>
+    <p id="status" class="status-message">プレイヤー1からスタート！1〜3回押したら交代しよう。</p>
+    <p id="bullet-status" class="bullet-status sr-only" aria-live="polite" role="status">ピストル: 安全タイミング</p>
+    <div id="bullet-track" class="bullet-track bullet-safe" aria-hidden="true">
+      <div class="bullet-halo"></div>
+      <div id="bullet-visual" class="bullet-visual bullet-safe"></div>
+    </div>
+    <div id="dance" class="dance-stage" aria-hidden="true">
+      <span class="dancer dancer-left">🕺</span>
+      <span class="dancer dancer-right">💃</span>
+    </div>
+    <div class="sound-control">
+      <label for="sound-toggle">
+        <input id="sound-toggle" type="checkbox" checked>
+        サウンドを鳴らす
+      </label>
+    </div>
+    <div class="player-count-control">
+      <span>人数設定:</span>
+      <button id="player-count-button" type="button">2人で遊ぶ</button>
+    </div>
+    <p class="hint">スペースキーでカウントアップ（1〜3回まで）、Nキーで交代、Rキーでリセット！音楽を流しながらチャレンジしよう。</p>
+    <div class="button-group">
+      <button id="increment" type="button">増やす</button>
+      <button id="pass" type="button">交代する</button>
+    </div>
   </main>
   <script src="main.js"></script>
 </body>
