@@ -207,15 +207,35 @@ body::after {
   animation: dance-spin 1s infinite ease-in-out;
 }
 
+
+.action-panel {
+  margin-top: 1.5rem;
+  padding: 1.25rem 1rem 1.35rem;
+  border-radius: 28px;
+  background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(232, 247, 255, 0.9));
+  box-shadow: 0 12px 30px rgba(0, 50, 90, 0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+}
+
 .sound-control {
   margin-top: 1rem;
   font-size: 0.95rem;
   color: #333;
 }
 
+.action-panel .sound-control {
+  margin-top: 0;
+  width: 100%;
+  text-align: center;
+}
+
 .sound-control label {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
   cursor: pointer;
 }
@@ -232,12 +252,13 @@ body::after {
 }
 
 .primary-action {
-  margin-top: 1.35rem;
-  margin-bottom: 0.5rem;
+  margin: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.95rem;
+  width: min(320px, 100%);
+  margin-inline: auto;
 }
 
 .increment-button {
@@ -292,7 +313,8 @@ body::after {
 }
 
 .pass-button {
-  min-width: min(220px, 80vw);
+  width: 100%;
+  min-width: 0;
   padding-inline: 2.25rem;
   background-color: #ffb703;
   color: #222;
@@ -310,8 +332,9 @@ body::after {
     margin: 2.5rem auto;
   }
 
-  .primary-action {
-    margin-top: 1.75rem;
+  .action-panel {
+    margin-top: 2rem;
+    padding: 1.5rem 1.5rem 1.85rem;
   }
 }
 

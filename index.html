@@ -23,16 +23,18 @@
       <span class="dancer dancer-left">🕺</span>
       <span class="dancer dancer-right">💃</span>
     </div>
-    <div class="primary-action" aria-live="polite">
-      <button id="increment" class="increment-button" type="button">増やす</button>
-      <button id="pass" class="pass-button" type="button">交代する</button>
-    </div>
-    <div class="sound-control">
-      <label for="sound-toggle">
-        <input id="sound-toggle" type="checkbox" checked>
-        サウンドを鳴らす
-      </label>
-    </div>
+    <section class="action-panel" aria-label="操作エリア">
+      <div class="primary-action" aria-live="polite">
+        <button id="increment" class="increment-button" type="button">増やす</button>
+        <button id="pass" class="pass-button" type="button">交代する</button>
+      </div>
+      <div class="sound-control">
+        <label for="sound-toggle">
+          <input id="sound-toggle" type="checkbox" checked>
+          サウンドを鳴らす
+        </label>
+      </div>
+    </section>
     <div class="player-count-control">
       <span>人数設定:</span>
       <button id="player-count-button" type="button">2人で遊ぶ</button>
