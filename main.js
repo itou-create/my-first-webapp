@@ -34,6 +34,7 @@ const bulletSafeDurationRange = [2200, 4200];
 const bulletDangerDurationRange = [900, 1700];
 let bulletSafe = true;
 let bulletTimerId = null;
+let skipNextBulletSound = false;
 
 const musicSettings = {
   bpm: 112,
@@ -225,7 +226,10 @@ const stopMusic = () => {
   musicNodes = null;
 };
 
-const playTone = (frequency, duration = 0.2, delay = 0, type = "sine") => {
+const playTone = (
+  frequency,
+  {duration = 0.2, delay = 0, type = "sine", volume = 0.2, attack = 0.02} = {}
+) => {
   if (!audioEnabled) {
     return;
   }
@@ -236,11 +240,11 @@ const playTone = (frequency, duration = 0.2, delay = 0, type = "sine") => {
   const oscillator = ctx.createOscillator();
   const gainNode = ctx.createGain();
   oscillator.type = type;
-  oscillator.frequency.setValueAtTime(frequency, ctx.currentTime);
   const startTime = ctx.currentTime + delay;
+  oscillator.frequency.setValueAtTime(frequency, startTime);
   const endTime = startTime + duration;
   gainNode.gain.setValueAtTime(0.001, startTime);
-  gainNode.gain.exponentialRampToValueAtTime(0.2, startTime + 0.02);
+  gainNode.gain.exponentialRampToValueAtTime(volume, startTime + attack);
   gainNode.gain.exponentialRampToValueAtTime(0.0001, endTime);
   oscillator.connect(gainNode);
   gainNode.connect(ctx.destination);
@@ -250,7 +254,13 @@ const playTone = (frequency, duration = 0.2, delay = 0, type = "sine") => {
 
 const playIncrementSound = () => {
   const base = 420 + (count % 6) * 35;
-  playTone(base, 0.14, 0, "triangle");
+  playTone(base, {duration: 0.14, type: "triangle", volume: 0.14});
+  playTone(base * 1.5, {
+    duration: 0.08,
+    delay: 0.12,
+    type: "sine",
+    volume: 0.08,
+  });
 };
 
 const playExplosionSound = () => {
@@ -365,7 +375,59 @@ const playExplosionSound = () => {
 };
 
 const playResetSound = () => {
-  playTone(260, 0.2, 0, "sawtooth");
+  playTone(220, {duration: 0.22, type: "sawtooth", volume: 0.16});
+  playTone(330, {
+    duration: 0.24,
+    delay: 0.1,
+    type: "triangle",
+    volume: 0.12,
+  });
+};
+
+const playPassSound = () => {
+  playTone(660, {duration: 0.1, type: "square", volume: 0.12});
+  playTone(520, {
+    duration: 0.18,
+    delay: 0.08,
+    type: "triangle",
+    volume: 0.1,
+  });
+};
+
+const playTurnChangeSound = () => {
+  if (exploded) {
+    return;
+  }
+  playTone(392, {duration: 0.16, type: "sine", volume: 0.13});
+  playTone(494, {
+    duration: 0.18,
+    delay: 0.1,
+    type: "triangle",
+    volume: 0.11,
+  });
+};
+
+const playBulletSafeSound = () => {
+  playTone(880, {duration: 0.12, type: "triangle", volume: 0.11});
+  playTone(1175, {
+    duration: 0.2,
+    delay: 0.05,
+    type: "sine",
+    volume: 0.09,
+  });
+};
+
+const playBulletDangerSound = (dangerDuration) => {
+  const emphasis = dangerDuration
+    ? Math.min(0.24, Math.max(0.14, 1400 / dangerDuration))
+    : 0.2;
+  playTone(360, {duration: 0.2, type: "sawtooth", volume: emphasis});
+  playTone(270, {
+    duration: 0.24,
+    delay: 0.16,
+    type: "square",
+    volume: emphasis * 0.9,
+  });
 };
 
 const randomDuration = (min, max) => Math.random() * (max - min) + min;
@@ -408,9 +470,21 @@ const updateBulletVisual = (dangerDuration) => {
 };
 
 const setBulletState = (safe, dangerDuration = null) => {
+  const previousState = bulletSafe;
   bulletSafe = safe;
   updateBulletIndicator();
   updateBulletVisual(!safe ? dangerDuration : null);
+  if (skipNextBulletSound) {
+    skipNextBulletSound = false;
+    return;
+  }
+  if (!exploded && previousState !== safe) {
+    if (safe) {
+      playBulletSafeSound();
+    } else {
+      playBulletDangerSound(dangerDuration);
+    }
+  }
 };
 
 const stopBulletSequence = () => {
@@ -475,6 +549,7 @@ const updateView = () => {
 };
 
 const advanceTurn = () => {
+  playTurnChangeSound();
   currentPlayer += 1;
   if (currentPlayer > totalPlayers) {
     currentPlayer = 1;
@@ -522,6 +597,7 @@ const handlePass = () => {
     updateView();
     return;
   }
+  playPassSound();
   advanceTurn();
   updateView();
 };
@@ -539,6 +615,7 @@ const resetGame = ({playSound = true} = {}) => {
       playResetSound();
     }
   }
+  skipNextBulletSound = !playSound;
   count = 0;
   target = generateTarget();
   exploded = false;
@@ -594,6 +671,7 @@ const handlePlayerCountChange = () => {
 playerCountButton.addEventListener("click", handlePlayerCountChange);
 passButton.addEventListener("click", handlePass);
 
+skipNextBulletSound = true;
 startBulletSequence();
 updatePlayerCountLabel();
 
