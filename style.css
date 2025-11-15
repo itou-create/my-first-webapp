@@ -1,18 +1,20 @@
-﻿:root {
+:root {
   font-family: "Noto Sans JP", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background-color: #f4f4f4;
   color: #222;
+  --app-padding: clamp(1.25rem, 4vw, 2rem);
 }
 
 body {
   margin: 0;
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(160deg, #8ec5fc 0%, #e0c3fc 40%, #7fd0ff 75%, #46a6ff 100%);
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 body::before,
@@ -41,7 +43,10 @@ body::after {
   position: relative;
   z-index: 1;
   text-align: center;
-  padding: 2rem;
+  width: min(100%, 420px);
+  margin: clamp(1rem, 5vw, 1.5rem) auto;
+  padding: var(--app-padding);
+  padding-bottom: calc(var(--app-padding) + env(safe-area-inset-bottom, 0px));
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.1);
@@ -275,6 +280,17 @@ body::after {
   gap: 0.75rem;
 }
 
+@media (min-width: 600px) {
+  .app {
+    margin: 2.5rem auto;
+  }
+
+  .button-group {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
 button {
   padding: 0.75rem 1.5rem;
   font-size: 1.1rem;
@@ -304,8 +320,8 @@ button:disabled {
 
 .reset-button {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: clamp(0.75rem, 4vw, 1rem);
+  right: clamp(0.75rem, 4vw, 1rem);
   padding: 0.4rem 1rem;
   font-size: 0.95rem;
   font-weight: 700;
@@ -313,6 +329,40 @@ button:disabled {
   background: linear-gradient(135deg, #ff8a8a, #ff3b3b);
   color: #fff;
   box-shadow: 0 6px 14px rgba(255, 59, 59, 0.35);
+}
+
+@media (max-width: 480px) {
+  body {
+    align-items: stretch;
+    justify-content: flex-start;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 1rem);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  #count {
+    font-size: 1.85rem;
+  }
+
+  .target-display {
+    font-size: 1.05rem;
+  }
+
+  .turn-status,
+  .status-message,
+  .sound-control,
+  .player-count-control,
+  .hint {
+    font-size: 0.95rem;
+  }
+
+  .face-display {
+    font-size: 4.2rem;
+  }
+
+  button {
+    font-size: 1rem;
+    padding: 0.65rem 1.2rem;
+  }
 }
 
 .reset-button:hover {
