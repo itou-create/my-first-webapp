@@ -1,11 +1,12 @@
 const countDisplay = document.getElementById("count");
 const targetDisplay = document.getElementById("target");
 const turnDisplay = document.getElementById("turn");
+const turnIndicator = document.getElementById("turn-indicator");
+const turnBadge = document.getElementById("turn-badge");
 const statusDisplay = document.getElementById("status");
 const faceDisplay = document.getElementById("face");
 const danceStage = document.getElementById("dance");
 const incrementButton = document.getElementById("increment");
-const passButton = document.getElementById("pass");
 const resetButton = document.getElementById("reset");
 const soundToggle = document.getElementById("sound-toggle");
 const playerCountButton = document.getElementById("player-count-button");
@@ -25,11 +26,12 @@ let audioContext = null;
 let musicNodes = null;
 let currentPlayer = 1;
 let turnClicks = 0;
+let hasActedThisTurn = false;
 const maxClicksPerTurn = 3;
 const minPlayers = 2;
 const maxPlayers = 6;
 let totalPlayers = 2;
-let statusMessage = `プレイヤー1からスタート！${totalPlayers}人で順番に1〜${maxClicksPerTurn}回まで押そう。`;
+let statusMessage = `プレイヤー1からスタート！青の間に1〜${maxClicksPerTurn}回押して、赤になったら自動で交代しよう。`;
 const bulletSafeDurationRange = [2200, 4200];
 const bulletDangerDurationRange = [900, 1700];
 let bulletSafe = true;
@@ -384,16 +386,6 @@ const playResetSound = () => {
   });
 };
 
-const playPassSound = () => {
-  playTone(660, {duration: 0.1, type: "square", volume: 0.12});
-  playTone(520, {
-    duration: 0.18,
-    delay: 0.08,
-    type: "triangle",
-    volume: 0.1,
-  });
-};
-
 const playTurnChangeSound = () => {
   if (exploded) {
     return;
@@ -485,6 +477,9 @@ const setBulletState = (safe, dangerDuration = null) => {
       playBulletDangerSound(dangerDuration);
     }
   }
+  if (!safe && previousState !== safe) {
+    handleDangerPhaseStart();
+  }
 };
 
 const stopBulletSequence = () => {
@@ -537,25 +532,58 @@ const updateView = () => {
   countDisplay.textContent = `カウント: ${count}`;
   targetDisplay.textContent = `爆発ライン: ${target}`;
   const remaining = Math.max(0, maxClicksPerTurn - turnClicks);
-  turnDisplay.textContent = exploded
-    ? `ゲーム終了 - プレイヤー${currentPlayer}が爆発`
-    : `プレイヤー${currentPlayer}の番 / 残り ${remaining} 回（全${totalPlayers}人）`;
+  if (turnBadge) {
+    turnBadge.textContent = exploded ? "ゲーム終了" : `プレイヤー${currentPlayer}`;
+  }
+  if (turnIndicator) {
+    const isActive = !exploded;
+    turnIndicator.classList.toggle("is-safe", isActive && bulletSafe);
+    turnIndicator.classList.toggle("is-danger", isActive && !bulletSafe);
+  }
+  if (turnDisplay) {
+    if (exploded) {
+      turnDisplay.textContent = `ゲーム終了 - プレイヤー${currentPlayer}が爆発`;
+    } else if (bulletSafe) {
+      turnDisplay.textContent = `プレイヤー${currentPlayer}の番 / 青の間にあと ${remaining} 回（全${totalPlayers}人）`;
+    } else {
+      turnDisplay.textContent = `プレイヤー${currentPlayer}の番 / 赤！青に戻るまで待ってね（全${totalPlayers}人）`;
+    }
+  }
   statusDisplay.textContent = statusMessage;
   faceDisplay.textContent = getFaceForState(count, target, exploded);
   incrementButton.disabled = exploded;
-  passButton.disabled = exploded || turnClicks === 0;
   danceStage.classList.toggle("active", exploded);
   danceStage.setAttribute("aria-hidden", String(!exploded));
 };
 
-const advanceTurn = () => {
+const advanceTurn = (messageBuilder = null) => {
   playTurnChangeSound();
+  const previousPlayer = currentPlayer;
   currentPlayer += 1;
   if (currentPlayer > totalPlayers) {
     currentPlayer = 1;
   }
   turnClicks = 0;
-  statusMessage = `プレイヤー${currentPlayer}に交代！1〜${maxClicksPerTurn}回押してからNキーで交代しよう。`;
+  hasActedThisTurn = false;
+  if (typeof messageBuilder === "function") {
+    statusMessage = messageBuilder(previousPlayer, currentPlayer);
+  } else if (typeof messageBuilder === "string") {
+    statusMessage = messageBuilder;
+  } else {
+    statusMessage = `プレイヤー${currentPlayer}に交代！青の間に1〜${maxClicksPerTurn}回押そう。`;
+  }
+};
+
+const handleDangerPhaseStart = () => {
+  if (exploded || !hasActedThisTurn) {
+    return;
+  }
+  const clicksThisTurn = turnClicks;
+  advanceTurn((previousPlayer, nextPlayer) => {
+    const clickWord = `${clicksThisTurn}回`;
+    return `赤に変わった！プレイヤー${previousPlayer}は${clickWord}押して終了。プレイヤー${nextPlayer}は青になったらスタート！`;
+  });
+  updateView();
 };
 
 const handleIncrement = () => {
@@ -569,36 +597,21 @@ const handleIncrement = () => {
   startMusic();
   count += 1;
   turnClicks += 1;
+  hasActedThisTurn = true;
   if (count >= target) {
     triggerExplosion(`プレイヤー${currentPlayer}が爆発！Rキーまたは「リセット」で再挑戦しよう。`);
     return;
   } else {
     playIncrementSound();
     if (turnClicks >= maxClicksPerTurn) {
-      advanceTurn();
+      advanceTurn((previousPlayer, nextPlayer) =>
+        `プレイヤー${previousPlayer}は${maxClicksPerTurn}回押し切った！プレイヤー${nextPlayer}は赤になる前にチャレンジしよう。`
+      );
     } else {
       const remaining = maxClicksPerTurn - turnClicks;
-      statusMessage = `プレイヤー${currentPlayer}の番です。あと ${remaining} 回まで押せます（Nキーで交代）。`;
+      statusMessage = `プレイヤー${currentPlayer}の番。青のうちにあと ${remaining} 回押せるよ。赤になったら自動交代！`;
     }
   }
-  updateView();
-};
-
-const handlePass = () => {
-  if (exploded) {
-    return;
-  }
-  if (!bulletSafe) {
-    triggerExplosion("弾が飛んでいる最中に動いたため命中してしまった！");
-    return;
-  }
-  if (turnClicks === 0) {
-    statusMessage = "最低1回は押してから交代できます。";
-    updateView();
-    return;
-  }
-  playPassSound();
-  advanceTurn();
   updateView();
 };
 
@@ -621,7 +634,8 @@ const resetGame = ({playSound = true} = {}) => {
   exploded = false;
   currentPlayer = 1;
   turnClicks = 0;
-  statusMessage = `プレイヤー1からリスタート！${totalPlayers}人で順番に1〜${maxClicksPerTurn}回まで押そう。`;
+  hasActedThisTurn = false;
+  statusMessage = `プレイヤー1からリスタート！青の間に1〜${maxClicksPerTurn}回押して、赤になったら自動交代しよう。`;
   updatePlayerCountLabel();
   startBulletSequence();
   updateView();
@@ -641,9 +655,6 @@ const handleKeyControls = (event) => {
   } else if (event.code === "KeyR") {
     event.preventDefault();
     handleReset();
-  } else if (event.code === "KeyN") {
-    event.preventDefault();
-    handlePass();
   }
 };
 
@@ -669,7 +680,6 @@ const handlePlayerCountChange = () => {
 };
 
 playerCountButton.addEventListener("click", handlePlayerCountChange);
-passButton.addEventListener("click", handlePass);
 
 skipNextBulletSound = true;
 startBulletSequence();
