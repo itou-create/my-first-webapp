@@ -207,15 +207,35 @@ body::after {
   animation: dance-spin 1s infinite ease-in-out;
 }
 
+
+.action-panel {
+  margin-top: 1.5rem;
+  padding: 1.25rem 1rem 1.35rem;
+  border-radius: 28px;
+  background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(232, 247, 255, 0.9));
+  box-shadow: 0 12px 30px rgba(0, 50, 90, 0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+}
+
 .sound-control {
   margin-top: 1rem;
   font-size: 0.95rem;
   color: #333;
 }
 
+.action-panel .sound-control {
+  margin-top: 0;
+  width: 100%;
+  text-align: center;
+}
+
 .sound-control label {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
   cursor: pointer;
 }
@@ -229,6 +249,36 @@ body::after {
   margin-top: 0.75rem;
   font-size: 0.9rem;
   color: #666;
+}
+
+.primary-action {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.95rem;
+  width: min(320px, 100%);
+  margin-inline: auto;
+}
+
+.increment-button {
+  width: min(240px, 70vw);
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  font-size: clamp(1.35rem, 5vw, 1.8rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  background: radial-gradient(circle at 30% 30%, #8fd3ff, #0078d4);
+  box-shadow: 0 10px 25px rgba(0, 120, 212, 0.35);
+}
+
+.increment-button:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 14px 30px rgba(0, 120, 212, 0.4);
+}
+
+.increment-button:active {
+  transform: translateY(2px) scale(0.98);
 }
 
 .player-count-control {
@@ -262,22 +312,19 @@ body::after {
   box-shadow: 0 2px 6px rgba(15, 47, 76, 0.15);
 }
 
-.button-group #pass {
+.pass-button {
+  width: 100%;
+  min-width: 0;
+  padding-inline: 2.25rem;
   background-color: #ffb703;
   color: #222;
   font-weight: 600;
+  box-shadow: 0 8px 18px rgba(255, 145, 0, 0.25);
 }
 
-.button-group #pass:disabled {
+.pass-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-.button-group {
-  margin-top: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
 }
 
 @media (min-width: 600px) {
@@ -285,9 +332,9 @@ body::after {
     margin: 2.5rem auto;
   }
 
-  .button-group {
-    flex-direction: row;
-    justify-content: center;
+  .action-panel {
+    margin-top: 2rem;
+    padding: 1.5rem 1.5rem 1.85rem;
   }
 }
 
